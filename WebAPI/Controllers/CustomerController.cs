@@ -27,13 +27,13 @@ public class CustomerController
         return await customerService.GetItemByIdAsync(id);
 
     }
-    [HttpPut]
+    [HttpPost]
     public async Task<Responce<string>> CreateItemAsync([FromForm]CustomerCreateDto dto)
     {
         return await customerService.CreateItemAsync(dto);
 
     }
-    [HttpPost("id:int")]
+    [HttpPut("id:int")]
     public async Task<Responce<string>> UpdateItemAsync(int id, [FromForm]CustomerUpdateDto dto)
     { 
         return await customerService.UpdateItemAsync(id,dto);
@@ -44,6 +44,5 @@ public class CustomerController
     public async Task<Responce<string>> DeleteItemAsync(int id)
     {
         return await customerService.DeleteItemAsync(id);
-
     } 
 }

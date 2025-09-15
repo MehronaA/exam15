@@ -21,7 +21,7 @@ public class CustomerService:ICustomerService
 
     public async Task<Responce<string>> CreateItemAsync(CustomerCreateDto dto)
     {
-        var fileName = await _fileService.SaveFileAsync("Customer", dto.ProfilePicture);
+        var fileName = await _fileService.SaveFileAsync("Customer", dto.ProfilePicture!);
 
         await using var connection = _context.GetConnection();
         connection.Open();
