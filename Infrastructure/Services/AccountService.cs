@@ -21,7 +21,7 @@ public class AccountService : IAccountService
         await using var connection = _context.GetConnection();
         connection.Open();
         if (dto.Balance < 0) return Responce<string>.Fail(404, "Balance cannot be negative");
-        var cmd = "insert into accounts(accountType,balance) values(@accountType,@balance)";
+        var cmd = "insert into accounts(accountNumber,accountType,balance) values(@accountNumber,@accountType,@balance)";
         var result = await connection.ExecuteAsync(cmd, dto);
         return result == 0
                 ? Responce<string>.Fail(500, "Something goes wrong")
