@@ -7,7 +7,7 @@ namespace Infrastructure.Services;
 
 public class FileService:IFileService
 {
-
+    
     private readonly IWebHostEnvironment _environment;
 
     public FileService(IWebHostEnvironment environment)
@@ -15,6 +15,8 @@ public class FileService:IFileService
         _environment = environment;
     }
     public async Task<string> SaveFileAsync(string folder, IFormFile file)
+    {
+        try
     {
         var webRootPath = _environment.WebRootPath;
         var path = Path.Combine(webRootPath, folder);
@@ -31,13 +33,29 @@ public class FileService:IFileService
         
         return file.FileName;
     }
+    catch (Exception e)
+    {
+            Console.WriteLine(e);
+        throw;
+    }
+        
+    }
 
     public void DeleteFileAsync(string folder, string fileName)
     {
-        var webRootPath = _environment.WebRootPath;
+        try
+        {
+            var webRootPath = _environment.WebRootPath;
         var fullPath = Path.Combine(webRootPath, folder, fileName);
         
         if (File.Exists(fullPath))
             File.Delete(fullPath);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        
     }
 }

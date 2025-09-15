@@ -8,7 +8,7 @@ using Infrastructure.Interfaces;
 namespace Infrastructure.Services;
 
 public class AccountService : IAccountService
-{
+{ 
     private readonly DataContext _context;
     public AccountService(DataContext context)
     {
@@ -16,6 +16,8 @@ public class AccountService : IAccountService
     }
     public async Task<Responce<string>> CreateItemAsync(AccountCreateDto dto)
     {
+        try
+        {
         await using var connection = _context.GetConnection();
         connection.Open();
         if (dto.Balance < 0) return Responce<string>.Fail(404, "Balance cannot be negative");
@@ -24,12 +26,19 @@ public class AccountService : IAccountService
         return result == 0
                 ? Responce<string>.Fail(500, "Something goes wrong")
                 : Responce<string>.Created("Created successfuly");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        
     }
 
-   
-
-    public async Task<Responce<string>> DeleteItemAsync(int id)
+       public async Task<Responce<string>> DeleteItemAsync(int id)
     {
+        try
+        {
         await using var connection = _context.GetConnection();
         connection.Open();
         var cmd1 = "select * from accounts where accountNumber =@id ";
@@ -39,11 +48,20 @@ public class AccountService : IAccountService
         var result = await connection.ExecuteAsync(cmd, new { id });
         return result == 0
                 ? Responce<string>.Fail(500, "Not deleted")
-                : Responce<string>.Created("Deleted successfuly");
+                : Responce<string>.Created("Deleted successfuly");   
+        }
+       catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        
     }
 
     public async Task<Responce<AccountGetDto>> GetItemById(int id)
     {
+        try
+        {
         await using var connection = _context.GetConnection();
         connection.Open();
         var cmd = "select * from accounts where accountNumber=@id";
@@ -51,19 +69,37 @@ public class AccountService : IAccountService
         return result == null
                 ? Responce<AccountGetDto>.Fail(404, "Not found")
                 : Responce<AccountGetDto>.Ok(result, null);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+       
     }
 
     public async Task<Responce<List<AccountGetDto>>> GetItemsAsync()
     {
+        try
+        {
         await using var connection = _context.GetConnection();
         connection.Open();
         var cmd = "select * from accounts";
         var result = await connection.QueryAsync<AccountGetDto>(cmd);
         return Responce<List<AccountGetDto>>.Ok(result.ToList());
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        
     }
     public async Task<Responce<string>> UpdateItemAsync(int id, AccountUpdateDto dto)
     {
-        await using var connection = _context.GetConnection();
+        try
+        {
+            await using var connection = _context.GetConnection();
         connection.Open();
         if (dto.Balance < 0) return Responce<string>.Fail(404, "Balance cannot be negative");
         var cmd1 = "select * from account where accountNumber=@id ";
@@ -79,6 +115,13 @@ public class AccountService : IAccountService
         return result == 0
                 ? Responce<string>.Fail(500, "Not updated")
                 : Responce<string>.Created("Updated successfuly");
+        }
+       catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        
          
     }
 
