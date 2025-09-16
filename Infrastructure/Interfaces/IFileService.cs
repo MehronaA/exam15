@@ -5,6 +5,6 @@ namespace Infrastructure.Interfaces;
 
 public interface IFileService
 {
-    Task<string> SaveFileAsync(string folder, IFormFile file);
+    Task<string> SaveFileAsync(string folder, IFormFile? file);
     void DeleteFileAsync(string folder, string fileName);
 }

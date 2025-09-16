@@ -6,7 +6,7 @@ phoneNumber varchar(10) not null unique,
 address varchar(100) not null,
 profilePhoto varchar(100)
 );
-create table account(
+create table accounts(
 accountNumber int,
 accountType varchar(100) check(accountType in('savings','checking')),
 balance decimal check (balance>0)
@@ -19,7 +19,7 @@ VALUES
 ('Дмитрий Сидоров', 'dmitry.sidorov@example.com', '9034567890', 'г. Худжанд, ул. Фирдавси, 10', 'sidorov.jpeg'),
 ('Екатерина Смирнова', 'ekaterina.smirnova@example.com', '9045678901', 'г. Душанбе, ул. Сино, 5', 'smirnova.jpg'),
 ('Иван Кузнецов', 'ivan.kuznetsov@example.com', '9056789012', 'г. Курган-Тюбе, ул. Бохтар, 18', 'kuznetsov.png');
-INSERT INTO account (accountNumber, accountType, balance)
+INSERT INTO accounts (accountNumber, accountType, balance)
 VALUES
 (1001, 'savings', 2500.75),
 (1002, 'checking', 1500.00),

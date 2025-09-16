@@ -14,7 +14,7 @@ public class FileService:IFileService
     {
         _environment = environment;
     }
-    public async Task<string> SaveFileAsync(string folder, IFormFile file)
+    public async Task<string> SaveFileAsync(string folder, IFormFile? file)
     {
         try
     {
@@ -25,10 +25,21 @@ public class FileService:IFileService
         {
             Directory.CreateDirectory(path);
         }
+
+            var fileName = file!.FileName;
+
+
+            if (fileName == null)
+            {
+                fileName = Path.Combine(path, "default.jpg");
+            }
+            else
+            {
+                fileName = Path.Combine(path, fileName);
+            }
     
-        var fullPath = Path.Combine(path, file.FileName);
         
-        await using var stream = new FileStream(fullPath, FileMode.Create);
+        await using var stream = new FileStream(fileName, FileMode.Create);
         await file.CopyToAsync(stream);
         
         return file.FileName;

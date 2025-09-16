@@ -1,6 +1,8 @@
 using System;
+using System.Diagnostics;
 using Dapper;
 using Infrasrtucture.APIResponces;
+using Infrasrtucture.DTOs.Customer;
 using Infrastructure.Data;
 using Infrastructure.DTOs.Account;
 using Infrastructure.Interfaces;
@@ -18,12 +20,23 @@ public class AccountService : IAccountService
     {
         try
         {
-        await using var connection = _context.GetConnection();
-        connection.Open();
-        if (dto.Balance < 0) return Responce<string>.Fail(404, "Balance cannot be negative");
-        var cmd = "insert into accounts(accountNumber,accountType,balance) values(@accountNumber,@accountType,@balance)";
-        var result = await connection.ExecuteAsync(cmd, dto);
-        return result == 0
+            //balance
+            if (dto.Balance < 0) return Responce<string>.Fail(400, "Balance cannot be negative");
+            await using var connection = _context.GetConnection();
+            connection.Open();
+
+            //check accountType
+            if (dto.AccountType.Trim() != "savings" || dto.AccountType.Trim() != "checkings") return Responce<string>.Fail(409, "Wrong Account type");
+
+            //account id
+            var customerCheck = "select * from accounts where customerId=@id";
+            var customerCheckResult = await connection.QueryFirstOrDefaultAsync<CustomerGetDto>(customerCheck, new { Id = dto.CustomerId });
+            if (customerCheckResult != null) return Responce<string>.Fail(409, "This customer already has account ");
+
+            //main
+            var cmd = "insert into accounts(customerId,accountType,balance) values(@customerId,@accountType,@balance)";
+            var result = await connection.ExecuteAsync(cmd, dto);
+            return result == 0
                 ? Responce<string>.Fail(500, "Something goes wrong")
                 : Responce<string>.Created("Created successfuly");
         }
@@ -39,14 +52,18 @@ public class AccountService : IAccountService
     {
         try
         {
-        await using var connection = _context.GetConnection();
-        connection.Open();
-        var cmd1 = "select * from accounts where accountNumber =@id ";
-        var res1 = await connection.QueryFirstOrDefaultAsync<AccountGetDto>(cmd1, new { id });
-        if (res1 == null) return Responce<string>.Fail(404, "Acoount with you account number doesnt exist");
-        var cmd = "delete from accounts where accountNumber = @id";
-        var result = await connection.ExecuteAsync(cmd, new { id });
-        return result == 0
+            await using var connection = _context.GetConnection();
+            connection.Open();
+
+            //check if exist
+            var cmd1 = "select * from accounts where accountId =@id ";
+            var res1 = await connection.QueryFirstOrDefaultAsync<AccountGetDto>(cmd1, new { id });
+            if (res1 == null) return Responce<string>.Fail(404, $"Acoount to delete with your accountId '{id}' doesnt exist");
+
+            //main
+            var cmd = "delete from accounts where accountNumber = @id";
+            var result = await connection.ExecuteAsync(cmd, new { id });
+            return result == 0
                 ? Responce<string>.Fail(500, "Not deleted")
                 : Responce<string>.Created("Deleted successfuly");   
         }
@@ -62,11 +79,11 @@ public class AccountService : IAccountService
     {
         try
         {
-        await using var connection = _context.GetConnection();
-        connection.Open();
-        var cmd = "select * from accounts where accountNumber=@id";
-        var result = await connection.QueryFirstOrDefaultAsync<AccountGetDto>(cmd, new { id});
-        return result == null
+            await using var connection = _context.GetConnection();
+            connection.Open();
+            var cmd = "select * from accounts where accountNumber=@id";
+            var result = await connection.QueryFirstOrDefaultAsync<AccountGetDto>(cmd, new { id});
+            return result == null
                 ? Responce<AccountGetDto>.Fail(404, "Not found")
                 : Responce<AccountGetDto>.Ok(result, null);
         }
@@ -99,20 +116,30 @@ public class AccountService : IAccountService
     {
         try
         {
+            //balance
+            if (dto.Balance < 0) return Responce<string>.Fail(400, "Balance cannot be negative");
+
             await using var connection = _context.GetConnection();
-        connection.Open();
-        if (dto.Balance < 0) return Responce<string>.Fail(404, "Balance cannot be negative");
-        var cmd1 = "select * from account where accountNumber=@id ";
-        var res1 = await connection.QueryFirstOrDefaultAsync<AccountGetDto>(cmd1, new { id });
-        if (res1 == null) return Responce<string>.Fail(404, "account to update doesnt exist");
-        var cmd = "update accounts set accountType=@accountType,balance=@balance where accountNumber=@id";
-        var result = await connection.ExecuteAsync(cmd, new
-        {
-            Id = id,
-            AccountType = dto.AccountType,
-            Balance = dto.Balance
-        });
-        return result == 0
+            connection.Open();
+
+
+            //check if exist
+            var customerCheck = "select * from accounts where customerId=@id";
+            var customerCheckResult = await connection.QueryFirstOrDefaultAsync<CustomerGetDto>(customerCheck, new { Id = dto.CustomerId });
+            if (customerCheckResult != null) return Responce<string>.Fail(409, "This customer already has account ");
+
+            //check id
+            var cmd1 = "select * from accounts where acocountId=@id ";
+            var res1 = await connection.QueryFirstOrDefaultAsync<AccountGetDto>(cmd1, new { id });
+            if (res1 == null) return Responce<string>.Fail(404, "account to update doesnt exist");
+            var cmd = "update accounts set accountType=@accountType,balance=@balance where accountNumber=@id";
+            var result = await connection.ExecuteAsync(cmd, new
+            {
+                Id = id,
+                AccountType = dto.AccountType,
+                Balance = dto.Balance
+            });
+            return result == 0
                 ? Responce<string>.Fail(500, "Not updated")
                 : Responce<string>.Created("Updated successfuly");
         }
